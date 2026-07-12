@@ -1,45 +1,76 @@
-import React from 'react';
-import Header from './Header';
+import React, { useState, useEffect } from 'react';
+import { supabase } from '../supabaseClient';
 import ProfileSection from './ProfileSection';
-import SolvedCard from './SolvedCard';
-import ContestList from './ContestList';
-import SubmissionsTable from './SubmissionsTable';
 import LinkSettings from './LinkSettings';
 
-export default function Dashboard({ user, onLogout, onProfileUpdate }) {
-  return (
-    <div className="min-h-screen bg-[#0f1319] text-gray-100 p-6 font-sans antialiased">
-      <Header user={user} onLogout={onLogout} />
-      
-      <main className="max-w-7xl mx-auto">
-        {/* URL Inputs + Profile Image input are inside here */}
-        <LinkSettings user={user} onUpdateSuccess={onProfileUpdate} />
+export default function Dashboard() {
+  const [userProfile, setUserProfile] = useState(null);
+  const [loading, setLoading] = useState(true);
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* LEFT COMPONENT: The newly structured profile card with avatar, total solved, and days active */}
-          <div className="lg:col-span-2">
-            <ProfileSection user={user} />
+  const fetchUserProfile = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('id, name, avatar_url, leetcode_url, codeforces_url, gfg_url, hackerrank_url')
+        .eq('id', user.id)
+        .single();
+
+      if (!error && data) {
+        setUserProfile({
+          id: data.id,
+          name: data.name,
+          avatarUrl: data.avatar_url,
+          leetcodeUrl: data.leetcode_url,
+          codeforcesUrl: data.codeforces_url,
+          gfgUrl: data.gfg_url,
+          hackerrankUrl: data.hackerrank_url
+        });
+      }
+    } catch (err) {
+      console.error('Error fetching dashboard profile data:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchUserProfile();
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-[#0d1117] flex items-center justify-center text-xs font-mono text-gray-400">
+        Loading dashboard infrastructure...
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-[#0d1117] text-gray-200 p-4 sm:p-6 lg:p-8">
+      <div className="max-w-7xl mx-auto space-y-8">
+        
+        {userProfile && (
+          <div className="flex flex-col gap-8">
+            
+            {/* TOP LAYER: Profile Header & 3-Column Diagrams */}
+            <div className="w-full">
+              <ProfileSection user={userProfile} />
+            </div>
+            
+            {/* BOTTOM LAYER: Settings & Platform Configuration */}
+            <div className="w-full border-t border-gray-800/60 pt-8">
+              <div className="max-w-3xl mx-auto">
+                <LinkSettings user={userProfile} onUpdateSuccess={fetchUserProfile} />
+              </div>
+            </div>
+
           </div>
-          
-          {/* RIGHT COMPONENT: Keeps the original right-side analytics cards */}
-          <div className="lg:col-span-1">
-            <SolvedCard 
-              leetcodeUrl={user.leetcodeUrl} 
-              codeforcesUrl={user.codeforcesUrl} 
-              gfgUrl={user.gfgUrl} 
-              githubUrl={user.githubUrl}
-            />
-          </div>
-          
-          <div className="lg:col-span-1">
-            <ContestList />
-          </div>
-          
-          <div className="lg:col-span-2">
-            <SubmissionsTable />
-          </div>
-        </div>
-      </main>
+        )}
+
+      </div>
     </div>
   );
 }

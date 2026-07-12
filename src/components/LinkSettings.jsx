@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
 import { supabase } from '../supabaseClient';
-import { Link2, Save, CheckCircle, Image } from 'lucide-react';
+import { Link2, Save } from 'lucide-react';
 
 export default function LinkSettings({ user, onUpdateSuccess }) {
   const [lc, setLc] = useState(user.leetcodeUrl || '');
   const [cf, setCf] = useState(user.codeforcesUrl || '');
   const [gfg, setGfg] = useState(user.gfgUrl || '');
-  const [avatar, setAvatar] = useState(user.avatarUrl || '');
+  const [hr, setHr] = useState(user.hackerrankUrl || ''); // Added HackerRank state
   
   const [saving, setSaving] = useState(false);
   const [statusMsg, setStatusMsg] = useState('');
@@ -22,7 +22,7 @@ export default function LinkSettings({ user, onUpdateSuccess }) {
         leetcode_url: lc || null,
         codeforces_url: cf || null,
         gfg_url: gfg || null,
-        avatar_url: avatar || null
+        hackerrank_url: hr || null // Updating HackerRank in database
       })
       .eq('id', user.id);
 
@@ -44,7 +44,7 @@ export default function LinkSettings({ user, onUpdateSuccess }) {
       </div>
 
       <form onSubmit={handleUpdateProfiles} className="space-y-4">
-        {/* Cleaned layout containing 4 equal width columns instead of 5 */}
+        {/* Adjusted grid to 4 columns to perfectly fit all coding platforms */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 items-end">
           <div>
             <label className="block text-[11px] font-mono text-gray-400 mb-1.5">LeetCode URL</label>
@@ -62,10 +62,8 @@ export default function LinkSettings({ user, onUpdateSuccess }) {
           </div>
 
           <div>
-            <label className="block text-[11px] font-mono text-gray-400 mb-1.5 flex items-center gap-1">
-              <Image className="w-3 h-3 text-cyan-400" /> Custom Avatar URL
-            </label>
-            <input type="url" placeholder="https://images.com/my-pic.jpg" value={avatar} onChange={(e) => setAvatar(e.target.value)} className="w-full bg-[#161b22] text-xs text-gray-200 rounded-lg p-2.5 border border-gray-800 focus:outline-none focus:border-cyan-500" />
+            <label className="block text-[11px] font-mono text-gray-400 mb-1.5">HackerRank URL</label>
+            <input type="url" placeholder="https://www.hackerrank.com/profile/user" value={hr} onChange={(e) => setHr(e.target.value)} className="w-full bg-[#161b22] text-xs text-gray-200 rounded-lg p-2.5 border border-gray-800 focus:outline-none focus:border-cyan-500" />
           </div>
         </div>
 

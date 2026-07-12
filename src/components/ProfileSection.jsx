@@ -1,20 +1,23 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Award, Calendar, Layers, User, RefreshCw, Eye, Edit3, X } from 'lucide-react';
+import { Award, Calendar, User, RefreshCw, Eye, Edit3, X, Sun, Moon } from 'lucide-react';
 
 export default function ProfileSection({ user }) {
   const [stats, setStats] = useState({
     leetcode: 0,
     codeforces: 0,
     gfg: 0,
+    hackerrank: 0,
     loading: true
   });
   
-  // State for the click-based interaction menu and viewing states
   const [showMenu, setShowMenu] = useState(false);
   const [showViewModal, setShowViewModal] = useState(false);
+  const [isDarkMode, setIsDarkMode] = useState(true);
   const menuRef = useRef(null);
 
+  // 1. Core metric configuration baselines
   const activeDaysBaseline = 12; 
+  const totalDaysGoal = 30; 
 
   const extractUsername = (url) => {
     if (!url) return '';
@@ -27,9 +30,10 @@ export default function ProfileSection({ user }) {
     const lcUser = extractUsername(user.leetcodeUrl);
     const cfUser = extractUsername(user.codeforcesUrl);
     const gfgUser = extractUsername(user.gfgUrl);
+    const hrUser = extractUsername(user.hackerrankUrl);
 
     let activeFetches = 0;
-    const currentStats = { leetcode: 0, codeforces: 0, gfg: 0 };
+    const currentStats = { leetcode: 0, codeforces: 0, gfg: 0, hackerrank: 0 };
 
     const checkCompletion = () => {
       activeFetches--;
@@ -70,16 +74,24 @@ export default function ProfileSection({ user }) {
         .finally(() => checkCompletion());
     }
 
+    if (hrUser) {
+      activeFetches++;
+      fetch(`https://hackerrank-api.vercel.app/api/username/${hrUser}`)
+        .then(res => res.json())
+        .then(data => { currentStats.hackerrank = data.solvedChallenges || data.total_solved || 0; })
+        .catch(() => {})
+        .finally(() => checkCompletion());
+    }
+
     if (activeFetches === 0) {
-      setStats({ leetcode: 0, codeforces: 0, gfg: 0, loading: false });
+      setStats({ leetcode: 0, codeforces: 0, gfg: 0, hackerrank: 0, loading: false });
     }
   };
 
   useEffect(() => {
     fetchMetrics();
-  }, [user.leetcodeUrl, user.codeforcesUrl, user.gfgUrl]);
+  }, [user.leetcodeUrl, user.codeforcesUrl, user.gfgUrl, user.hackerrankUrl]);
 
-  // Close the popup menu if clicking outside of the image area
   useEffect(() => {
     function handleClickOutside(event) {
       if (menuRef.current && !menuRef.current.contains(event.target)) {
@@ -92,130 +104,144 @@ export default function ProfileSection({ user }) {
 
   const defaultAvatar = 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=200&q=80';
   const avatarSrc = user.avatarUrl || defaultAvatar;
-  const totalSolved = stats.leetcode + stats.codeforces + stats.gfg;
+  
+  // 2. Pure Competitive Programming Metric Aggregator
+  const totalSolved = stats.leetcode + stats.codeforces + stats.gfg + stats.hackerrank;
+
+  // 3. SVG Donut Math Engine Calculations
+  const radius = 35;
+  const circumference = 2 * Math.PI * radius;
+  
+  const solvedPercentage = Math.min((totalSolved / 1000) * 100, 100); 
+  const solvedOffset = circumference - (solvedPercentage / 100) * circumference;
+
+  const daysPercentage = Math.min((activeDaysBaseline / totalDaysGoal) * 100, 100);
+  const daysOffset = circumference - (daysPercentage / 100) * circumference;
 
   const scrollToSettings = () => {
     setShowMenu(false);
-    // Smooth scroll down to the customization synchronization dashboard panel
     const settingsPanel = document.querySelector('form');
     if (settingsPanel) {
       settingsPanel.scrollIntoView({ behavior: 'smooth' });
-      // Brief visual indicator or focus could go here
     }
   };
 
   return (
-    <div className="bg-[#141922] border border-gray-800/60 rounded-xl p-6 shadow-xl h-full flex flex-col justify-between relative min-h-[280px]">
-      <div className="absolute top-0 right-0 w-32 h-32 bg-cyan-500/5 rounded-full blur-2xl pointer-events-none" />
+    <div className={`w-full transition-colors duration-200 ${isDarkMode ? 'text-gray-200' : 'text-gray-800'}`}>
       
-      <div>
-        <div className="flex items-center justify-between border-b border-gray-800 pb-4 mb-6">
-          <div className="flex items-center gap-2">
-            <User className="w-4 h-4 text-cyan-400" />
-            <h3 className="text-xs font-semibold text-gray-200 uppercase tracking-wider font-mono">Developer Dashboard Profile</h3>
-          </div>
-          <button onClick={fetchMetrics} className="text-gray-500 hover:text-white transition-colors">
-            <RefreshCw className="w-3.5 h-3.5" />
-          </button>
+      {/* HEADER NAVBAR LAYER */}
+      <div className={`flex items-center justify-between border-b px-6 py-4 mb-6 rounded-xl ${isDarkMode ? 'bg-[#141922] border-gray-800' : 'bg-white border-gray-200 shadow-sm'}`}>
+        <div className="flex items-center gap-2">
+          <span className="text-xs font-mono uppercase tracking-wider font-bold">Workspace Monitor</span>
         </div>
+        
+        <div className="flex items-center gap-4">
+          <button 
+            onClick={() => setIsDarkMode(!isDarkMode)} 
+            className={`p-2 rounded-full border transition-colors ${isDarkMode ? 'border-gray-800 hover:bg-gray-800 text-yellow-400' : 'border-gray-200 hover:bg-gray-100 text-indigo-600'}`}
+          >
+            {isDarkMode ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+          </button>
 
-        <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6">
-          
-          {/* Interactive Image Dropdown Target */}
-          <div className="relative flex-shrink-0" ref={menuRef}>
+          <div className={`w-8 h-8 rounded-full flex items-center justify-center border ${isDarkMode ? 'border-cyan-500/30 bg-cyan-950/20 text-cyan-400' : 'border-indigo-200 bg-indigo-50 text-indigo-600'}`}>
+            <User className="w-4 h-4" />
+          </div>
+        </div>
+      </div>
+
+      {/* 3-COLUMN METRICS GRID */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-stretch">
+        
+        {/* CARD 1: PROFILE IDENTIFIER */}
+        <div className={`border rounded-3xl p-6 flex flex-col items-center justify-between min-h-[340px] ${isDarkMode ? 'bg-[#141922] border-gray-800/80' : 'bg-white border-gray-200 shadow-sm'}`}>
+          <div className="relative mt-2" ref={menuRef}>
             <button 
               onClick={() => setShowMenu(!showMenu)}
-              className="group relative block rounded-2xl border border-gray-800 focus:outline-none transition-transform active:scale-98 overflow-hidden"
-              title="Profile Actions"
+              className="group relative block rounded-full border-2 border-cyan-500/40 p-1 focus:outline-none transition-transform"
             >
-              <img 
-                src={avatarSrc} 
-                alt="Developer Avatar" 
-                className="w-28 h-28 object-cover shadow-md bg-[#161b22] group-hover:opacity-80 transition-opacity"
-              />
-              <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity text-xs font-medium text-white">
-                Manage
+              <img src={avatarSrc} alt="Profile Avatar" className="w-24 h-24 rounded-full object-cover bg-gray-900" />
+              <div className="absolute inset-1 rounded-full bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center text-[10px] font-mono text-white">
+                OPTIONS
               </div>
             </button>
-            <div className="absolute -bottom-1 -right-1 bg-cyan-600 border border-[#141922] p-1.5 rounded-lg text-white pointer-events-none">
-              <Layers className="w-3.5 h-3.5" />
-            </div>
 
-            {/* Action Popup Popover Context Menu */}
             {showMenu && (
-              <div className="absolute left-0 mt-2 w-44 bg-[#1c2331] border border-gray-800 rounded-lg shadow-2xl py-1.5 z-50 animate-in fade-in slide-in-from-top-2 duration-100">
-                <button
-                  onClick={() => { setShowMenu(false); setShowViewModal(true); }}
-                  className="w-full text-left px-3 py-2 text-xs text-gray-200 hover:bg-gray-800 flex items-center gap-2 transition-colors"
-                >
-                  <Eye className="w-3.5 h-3.5 text-cyan-400" />
-                  View Image
+              <div className={`absolute left-1/2 -translate-x-1/2 mt-2 w-40 border rounded-lg shadow-2xl py-1 z-50 ${isDarkMode ? 'bg-[#1c2331] border-gray-800' : 'bg-white border-gray-200'}`}>
+                <button onClick={() => { setShowMenu(false); setShowViewModal(true); }} className="w-full text-left px-3 py-1.5 text-xs hover:bg-cyan-500/10 flex items-center gap-2">
+                  <Eye className="w-3.5 h-3.5 text-cyan-400" /> View Image
                 </button>
-                <button
-                  onClick={scrollToSettings}
-                  className="w-full text-left px-3 py-2 text-xs text-gray-200 hover:bg-gray-800 flex items-center gap-2 transition-colors border-t border-gray-800/60"
-                >
-                  <Edit3 className="w-3.5 h-3.5 text-emerald-400" />
-                  Change Avatar
+                <button onClick={scrollToSettings} className="w-full text-left px-3 py-1.5 text-xs hover:bg-cyan-500/10 flex items-center gap-2 border-t border-gray-800/20">
+                  <Edit3 className="w-3.5 h-3.5 text-emerald-400" /> Settings
                 </button>
               </div>
             )}
           </div>
 
-          {/* Profile Name and Info Text */}
-          <div className="flex-1 text-center sm:text-left space-y-2 pt-2">
-            <h2 className="text-2xl font-bold tracking-wide text-white">{user.name || 'Developer'}</h2>
-            <p className="text-xs font-mono text-gray-400">Sync status operational</p>
-            <div className="flex flex-wrap gap-1.5 pt-1 justify-center sm:justify-start">
-              {user.leetcodeUrl && <span className="text-[9px] bg-amber-500/10 text-amber-400 px-2 py-0.5 rounded border border-amber-500/10 font-mono">LeetCode</span>}
-              {user.codeforcesUrl && <span className="text-[9px] bg-blue-500/10 text-blue-400 px-2 py-0.5 rounded border border-blue-500/10 font-mono">Codeforces</span>}
-              {user.gfgUrl && <span className="text-[9px] bg-green-500/10 text-green-400 px-2 py-0.5 rounded border border-green-500/10 font-mono">GFG</span>}
-            </div>
+          <div className={`w-full text-center py-2 px-4 rounded-xl border font-semibold tracking-wide text-sm my-4 ${isDarkMode ? 'bg-[#161b22] border-gray-800 text-white' : 'bg-gray-50 border-gray-200 text-gray-800'}`}>
+            {user.name || 'Developer'}
+          </div>
+
+          <div className={`w-full p-3 rounded-xl text-[11px] font-mono space-y-1.5 flex-1 flex flex-col justify-center ${isDarkMode ? 'bg-[#161b22]/60 border border-gray-800/40 text-gray-400' : 'bg-gray-50/60 border border-gray-200/60 text-gray-500'}`}>
+            <div className="flex justify-between"><span>LeetCode:</span><span className={user.leetcodeUrl ? "text-emerald-400" : "text-gray-600"}>{user.leetcodeUrl ? "Connected" : "None"}</span></div>
+            <div className="flex justify-between"><span>Codeforces:</span><span className={user.codeforcesUrl ? "text-emerald-400" : "text-gray-600"}>{user.codeforcesUrl ? "Connected" : "None"}</span></div>
+            <div className="flex justify-between"><span>HackerRank:</span><span className={user.hackerrankUrl ? "text-emerald-400" : "text-gray-600"}>{user.hackerrankUrl ? "Connected" : "None"}</span></div>
           </div>
         </div>
+
+        {/* CARD 2: TOTAL QUESTIONS DIAGRAM */}
+        <div className={`border rounded-3xl p-6 flex flex-col items-center justify-center text-center ${isDarkMode ? 'bg-[#141922] border-gray-800/80' : 'bg-white border-gray-200 shadow-sm'}`}>
+          <div className="text-xs font-mono font-bold uppercase tracking-wider mb-6 opacity-70">Pie Diagram</div>
+          
+          <div className="relative w-36 h-36 flex items-center justify-center">
+            <svg className="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
+              <circle cx="50" cy="50" r={radius} className={isDarkMode ? "stroke-gray-800" : "stroke-gray-100"} strokeWidth="10" fill="transparent" />
+              <circle 
+                cx="50" cy="50" r={radius} stroke="#06b6d4" strokeWidth="10" fill="transparent" 
+                strokeDasharray={circumference} strokeDashoffset={stats.loading ? circumference : solvedOffset}
+                strokeLinecap="round" className="transition-all duration-1000 ease-out"
+              />
+            </svg>
+            <div className="absolute flex flex-col items-center justify-center">
+              <span className="text-2xl font-bold font-mono">{stats.loading ? '...' : totalSolved}</span>
+              <span className="text-[10px] uppercase font-mono text-gray-500">Solved</span>
+            </div>
+          </div>
+          <div className="text-sm font-semibold tracking-wide mt-6 text-cyan-400 font-mono uppercase">Total Questions</div>
+        </div>
+
+        {/* CARD 3: TOTAL DAYS DIAGRAM */}
+        <div className={`border rounded-3xl p-6 flex flex-col items-center justify-center text-center ${isDarkMode ? 'bg-[#141922] border-gray-800/80' : 'bg-white border-gray-200 shadow-sm'}`}>
+          <div className="text-xs font-mono font-bold uppercase tracking-wider mb-6 opacity-70">Pie Diagram</div>
+          
+          <div className="relative w-36 h-36 flex items-center justify-center">
+            <svg className="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
+              <circle cx="50" cy="50" r={radius} className={isDarkMode ? "stroke-gray-800" : "stroke-gray-100"} strokeWidth="10" fill="transparent" />
+              <circle 
+                cx="50" cy="50" r={radius} stroke="#10b981" strokeWidth="10" fill="transparent" 
+                strokeDasharray={circumference} strokeDashoffset={daysOffset}
+                strokeLinecap="round" className="transition-all duration-1000 ease-out"
+              />
+            </svg>
+            <div className="absolute flex flex-col items-center justify-center">
+              {/* Correctly bound to your numerical day tracking metric variable */}
+              <span className="text-2xl font-bold font-mono">{activeDaysBaseline}</span>
+              <span className="text-[10px] uppercase font-mono text-gray-500">/{totalDaysGoal} Days</span>
+            </div>
+          </div>
+          <div className="text-sm font-semibold tracking-wide mt-6 text-emerald-400 font-mono uppercase">Total Days</div>
+        </div>
+
       </div>
 
-      {/* Metric Display Row */}
-      <div className="mt-6 pt-4 border-t border-gray-800/40 grid grid-cols-2 gap-4">
-        <div className="bg-[#161b22] border border-gray-800/50 rounded-xl p-4 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="p-2 bg-emerald-500/10 rounded-lg text-emerald-400">
-              <Award className="w-4 h-4" />
-            </div>
-            <span className="text-xs font-medium text-gray-400">Total Solved</span>
-          </div>
-          <span className="text-xl font-bold font-mono text-white">
-            {stats.loading ? <span className="text-xs text-gray-600 animate-pulse">...</span> : totalSolved}
-          </span>
-        </div>
-
-        <div className="bg-[#161b22] border border-gray-800/50 rounded-xl p-4 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="p-2 bg-cyan-500/10 rounded-lg text-cyan-400">
-              <Calendar className="w-4 h-4" />
-            </div>
-            <span className="text-xs font-medium text-gray-400">Days Active</span>
-          </div>
-          <span className="text-xl font-bold font-mono text-white">{activeDaysBaseline} Days</span>
-        </div>
-      </div>
-
-      {/* Lightbox / View Image Modal Overlay */}
+      {/* FULL PREVIEW MODAL */}
       {showViewModal && (
-        <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-[100] p-4 animate-in fade-in duration-200">
-          <div className="relative max-w-md w-full bg-[#141922] border border-gray-800 rounded-2xl p-4 shadow-2xl">
-            <button 
-              onClick={() => setShowViewModal(false)}
-              className="absolute top-3 right-3 text-gray-400 hover:text-white bg-gray-800/40 p-1.5 rounded-lg transition-colors"
-            >
+        <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-[100] p-4">
+          <div className={`relative max-w-sm w-full border rounded-2xl p-4 shadow-2xl ${isDarkMode ? 'bg-[#141922] border-gray-800' : 'bg-white border-gray-200'}`}>
+            <button onClick={() => setShowViewModal(false)} className="absolute top-3 right-3 text-gray-400 hover:text-white bg-gray-500/10 p-1.5 rounded-lg">
               <X className="w-4 h-4" />
             </button>
-            <div className="text-xs font-mono text-gray-400 mb-3 pb-2 border-b border-gray-800">Profile Image Preview</div>
-            <img 
-              src={avatarSrc} 
-              alt="Full Avatar View" 
-              className="w-full h-auto max-h-[70vh] rounded-xl object-contain bg-[#161b22] border border-gray-800/50 shadow-inner"
-            />
+            <div className="text-xs font-mono text-gray-400 mb-3 pb-2 border-b border-gray-800">Avatar Image Frame</div>
+            <img src={avatarSrc} alt="Full View" className="w-full h-auto rounded-xl object-contain bg-gray-900 border border-gray-800/40" />
           </div>
         </div>
       )}
