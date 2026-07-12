@@ -40,7 +40,7 @@ export default function SolvedCard() {
                 </div>
 
                 {/* Main Track Background */}
-                <div className="w-full h-2.5 bg-[#161b22] border border-gray-800/50 rounded-full overflow-hidden p-[2px]">
+                <div className="w-full h-2.5 bg-[#161b22] border border-gray-800/50 rounded-full overflow-hidden p-0.5">
                   {/* Active Colored Fill Slider */}
                   <div 
                     className={`h-full ${item.color} rounded-full transition-all duration-700 ease-out shadow-sm`}
