@@ -9,14 +9,12 @@ export default function App() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // 1. Fetch initial session metadata state token
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       if (session) fetchUserProfile(session.user.id);
       else setLoading(false);
     });
 
-    // 2. Active listener captures logouts or changes dynamically
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session);
       if (session) fetchUserProfile(session.user.id);
@@ -32,7 +30,7 @@ export default function App() {
   const fetchUserProfile = async (userId) => {
     const { data, error } = await supabase
       .from('profiles')
-      .select('name, cf_handle')
+      .select('name, leetcode_url, codeforces_url, gfg_url, github_url')
       .eq('id', userId)
       .single();
 
@@ -40,12 +38,27 @@ export default function App() {
     setLoading(false);
   };
 
+  const handleProfileRefresh = () => {
+    if (session) fetchUserProfile(session.user.id);
+  };
+
   if (loading) {
-    return <div className="min-h-screen bg-[#0f1319] flex items-center justify-center text-cyan-400 font-mono">Securing Cloud Session...</div>;
+    return <div className="min-h-screen bg-[#0f1319] flex items-center justify-center text-cyan-400 font-mono animate-pulse">Securing Cloud Session...</div>;
   }
 
   return session && profile ? (
-    <Dashboard user={{ name: profile.name, cfHandle: profile.cf_handle }} onLogout={() => supabase.auth.signOut()} />
+    <Dashboard 
+      user={{ 
+        id: session.user.id,
+        name: profile.name, 
+        leetcodeUrl: profile.leetcode_url || "",
+        codeforcesUrl: profile.codeforces_url || "",
+        gfgUrl: profile.gfg_url || "",
+        githubUrl: profile.github_url || ""
+      }} 
+      onLogout={() => supabase.auth.signOut()} 
+      onProfileUpdate={handleProfileRefresh}
+    />
   ) : (
     <Auth />
   );

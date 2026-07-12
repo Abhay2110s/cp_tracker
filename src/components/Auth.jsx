@@ -16,7 +16,6 @@ export default function Auth() {
     setError('');
 
     if (isSignup) {
-      // 1. SIGNUP: Create user inside Supabase Auth Engine
       const { data: authData, error: authError } = await supabase.auth.signUp({ email, password });
       
       if (authError) {
@@ -25,15 +24,20 @@ export default function Auth() {
         return;
       }
 
-      // 2. METADATA: Insert name into public profiles table (cf_handle defaults to NULL or a placeholder)
       if (authData.user) {
         const { error: profileError } = await supabase.from('profiles').insert([
-          { id: authData.user.id, name: name }
+          { 
+            id: authData.user.id, 
+            name: name,
+            leetcode_url: null,
+            codeforces_url: null,
+            gfg_url: null,
+            github_url: null
+          }
         ]);
         if (profileError) setError(profileError.message);
       }
     } else {
-      // LOGIN: Authenticate existing user session
       const { error: loginError } = await supabase.auth.signInWithPassword({ email, password });
       if (loginError) setError(loginError.message);
     }
@@ -48,44 +52,23 @@ export default function Auth() {
         
         {isSignup && (
           <div className="relative">
-            <input 
-              type="text" 
-              placeholder="Full Name" 
-              value={name} 
-              onChange={(e) => setName(e.target.value)} 
-              className="w-full bg-[#161b22] text-sm text-gray-200 rounded-lg p-2.5 pl-10 border border-gray-800 focus:outline-none focus:border-cyan-500" 
-              required 
-            />
+            <input type="text" placeholder="Full Name" value={name} onChange={(e) => setName(e.target.value)} className="w-full bg-[#161b22] text-sm text-gray-200 rounded-lg p-2.5 pl-10 border border-gray-800 focus:outline-none focus:border-cyan-500" required />
             <User className="absolute left-3 top-3 text-gray-500 w-4 h-4" />
           </div>
         )}
         
         <div className="relative">
-          <input 
-            type="email" 
-            placeholder="Email Address" 
-            value={email} 
-            onChange={(e) => setEmail(e.target.value)} 
-            className="w-full bg-[#161b22] text-sm text-gray-200 rounded-lg p-2.5 pl-10 border border-gray-800 focus:outline-none focus:border-cyan-500" 
-            required 
-          />
+          <input type="email" placeholder="Email Address" value={email} onChange={(e) => setEmail(e.target.value)} className="w-full bg-[#161b22] text-sm text-gray-200 rounded-lg p-2.5 pl-10 border border-gray-800 focus:outline-none focus:border-cyan-500" required />
           <Mail className="absolute left-3 top-3 text-gray-500 w-4 h-4" />
         </div>
 
         <div className="relative">
-          <input 
-            type="password" 
-            placeholder="Password" 
-            value={password} 
-            onChange={(e) => setPassword(e.target.value)} 
-            className="w-full bg-[#161b22] text-sm text-gray-200 rounded-lg p-2.5 pl-10 border border-gray-800 focus:outline-none focus:border-cyan-500" 
-            required 
-          />
+          <input type="password" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} className="w-full bg-[#161b22] text-sm text-gray-200 rounded-lg p-2.5 pl-10 border border-gray-800 focus:outline-none focus:border-cyan-500" required />
           <Lock className="absolute left-3 top-3 text-gray-500 w-4 h-4" />
         </div>
         
         <button type="submit" disabled={loading} className="w-full bg-cyan-600 hover:bg-cyan-500 text-white font-medium py-2.5 rounded-lg text-sm transition-all cursor-pointer">
-          {loading ? 'Processing...' : isSignup ? 'Register' : 'Login'}
+          {loading ? 'Processing...' : isSignup ? 'Register Account' : 'Login'}
         </button>
 
         <p className="text-xs text-center text-gray-400 mt-4">
