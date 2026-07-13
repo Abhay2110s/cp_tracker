@@ -24,7 +24,6 @@ export default function Registration({ onNavigate }) {
     setLoading(true);
     setError('');
 
-    // Integrity check ensuring security string parity
     if (formData.password !== formData.confirmPassword) {
       setError('Passwords do not match.');
       setLoading(false);
@@ -56,55 +55,58 @@ export default function Registration({ onNavigate }) {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-green-50 via-white to-emerald-50 text-slate-800 font-sans relative overflow-hidden">
-      {/* Dynamic Background Accents identical to Welcome UI pattern */}
-      <div className="absolute top-[-10%] left-[-10%] w-[500px] h-[500px] rounded-full bg-emerald-100/40 blur-3xl pointer-events-none" />
-      <div className="absolute bottom-[-10%] right-[-10%] w-[500px] h-[500px] rounded-full bg-green-100/40 blur-3xl pointer-events-none" />
+    <div className="min-h-screen flex items-center justify-center p-4 bg-slate-950 text-slate-100 font-sans relative overflow-hidden">
+      {/* Immersive Dark & Neon Green Glowing Background Blurs */}
+      <div className="absolute top-[-20%] left-[-10%] w-[600px] h-[600px] rounded-full bg-emerald-950/20 border border-emerald-500/5 blur-[120px] pointer-events-none" />
+      <div className="absolute bottom-[-20%] right-[-10%] w-[600px] h-[600px] rounded-full bg-green-900/15 border border-green-500/5 blur-[120px] pointer-events-none" />
 
-      {/* Structured Card container perfectly mirroring the size and look of the SignIn form layout */}
-      <div className="w-full max-w-md border border-white bg-white/85 p-8 rounded-2xl shadow-[0_10px_40px_rgba(0,0,0,0.04)] backdrop-blur-md relative z-10">
+      {/* Main Glassmorphism Card */}
+      <div className="w-full max-w-md border border-slate-800 bg-slate-900/60 p-8 rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.5)] backdrop-blur-xl relative z-10">
         
+        {/* Back Button */}
         <button 
           onClick={() => onNavigate('welcome')} 
-          className="inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-600 hover:text-emerald-700 mb-6 transition-colors group"
+          className="inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-400 hover:text-emerald-300 mb-6 transition-colors group bg-transparent border-none p-0 cursor-pointer"
         >
           <ArrowLeft className="w-3.5 h-3.5 transform group-hover:-translate-x-0.5 transition-transform" />
           <span>Back to Home</span>
         </button>
 
+        {/* Header Text */}
         <div className="mb-6">
-          <h2 className="text-2xl font-bold text-slate-900 tracking-tight">Create Account</h2>
-          <p className="text-sm text-slate-500 mt-1">Please fill out your details to sign up.</p>
+          <h2 className="text-2xl font-bold text-white tracking-tight">Create Account</h2>
+          <p className="text-sm text-slate-400 mt-1">Please fill out your details to sign up.</p>
         </div>
 
+        {/* Error Alert */}
         {error && (
-          <div className="p-3.5 mb-4 text-xs font-semibold rounded-xl border border-red-200 bg-red-50 text-red-600">
+          <div className="p-3.5 mb-4 text-xs font-semibold rounded-xl border border-red-900/50 bg-red-950/30 text-red-400">
             {error}
           </div>
         )}
 
         {success ? (
           <div className="text-center py-6 space-y-4">
-            <div className="p-3.5 text-xs font-semibold rounded-xl border border-green-200 bg-green-50 text-green-700 shadow-sm">
+            <div className="p-3.5 text-xs font-semibold rounded-xl border border-emerald-900/50 bg-emerald-950/30 text-emerald-400 shadow-sm">
               Registration Successful!
             </div>
-            <p className="text-xs text-slate-500 leading-relaxed">
+            <p className="text-xs text-slate-400 leading-relaxed">
               Account created. Please check your verification email to confirm your details.
             </p>
             <button
               onClick={() => onNavigate('login')}
-              className="mt-2 text-sm font-semibold text-emerald-600 hover:underline bg-transparent border-none p-0 cursor-pointer outline-none"
+              className="mt-2 text-sm font-semibold text-emerald-400 hover:text-emerald-300 bg-transparent border-none p-0 cursor-pointer outline-none hover:underline"
             >
               Go to Sign In &rarr;
             </button>
           </div>
         ) : (
+          /* Form layout matching the dynamic inputs setup */
           <form onSubmit={handleSignUp} className="space-y-4">
-            
             <div>
-              <label className="block text-xs font-semibold text-slate-700 mb-1.5">Full Name</label>
+              <label className="block text-xs font-semibold text-slate-300 mb-1.5">Full Name</label>
               <div className="relative">
-                <User className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                <User className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
                 <input
                   type="text"
                   name="name"
@@ -112,15 +114,15 @@ export default function Registration({ onNavigate }) {
                   value={formData.name}
                   onChange={handleChange}
                   placeholder="Abhay"
-                  className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 bg-white text-sm text-slate-800 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 outline-none transition-all shadow-sm"
+                  className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-800 bg-slate-950 text-sm text-slate-200 placeholder-slate-600 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10 outline-none transition-all shadow-inner"
                 />
               </div>
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-slate-700 mb-1.5">Email Address</label>
+              <label className="block text-xs font-semibold text-slate-300 mb-1.5">Email Address</label>
               <div className="relative">
-                <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
                 <input
                   type="email"
                   name="email"
@@ -128,15 +130,15 @@ export default function Registration({ onNavigate }) {
                   value={formData.email}
                   onChange={handleChange}
                   placeholder="you@example.com"
-                  className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 bg-white text-sm text-slate-800 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 outline-none transition-all shadow-sm"
+                  className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-800 bg-slate-950 text-sm text-slate-200 placeholder-slate-600 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10 outline-none transition-all shadow-inner"
                 />
               </div>
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-slate-700 mb-1.5">Password</label>
+              <label className="block text-xs font-semibold text-slate-300 mb-1.5">Password</label>
               <div className="relative">
-                <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
                 <input
                   type={showPassword ? 'text' : 'password'}
                   name="password"
@@ -144,12 +146,12 @@ export default function Registration({ onNavigate }) {
                   value={formData.password}
                   onChange={handleChange}
                   placeholder="••••••••"
-                  className="w-full pl-10 pr-10 py-2.5 rounded-xl border border-slate-200 bg-white text-sm text-slate-800 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 outline-none transition-all shadow-sm"
+                  className="w-full pl-10 pr-10 py-2.5 rounded-xl border border-slate-800 bg-slate-950 text-sm text-slate-200 placeholder-slate-600 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10 outline-none transition-all shadow-inner"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-slate-400 hover:text-slate-600 transition-colors"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-slate-500 hover:text-slate-300 transition-colors bg-transparent border-none cursor-pointer"
                 >
                   {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
@@ -157,9 +159,9 @@ export default function Registration({ onNavigate }) {
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-slate-700 mb-1.5">Confirm Password</label>
+              <label className="block text-xs font-semibold text-slate-300 mb-1.5">Confirm Password</label>
               <div className="relative">
-                <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
                 <input
                   type={showConfirmPassword ? 'text' : 'password'}
                   name="confirmPassword"
@@ -167,22 +169,23 @@ export default function Registration({ onNavigate }) {
                   value={formData.confirmPassword}
                   onChange={handleChange}
                   placeholder="••••••••"
-                  className="w-full pl-10 pr-10 py-2.5 rounded-xl border border-slate-200 bg-white text-sm text-slate-800 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 outline-none transition-all shadow-sm"
+                  className="w-full pl-10 pr-10 py-2.5 rounded-xl border border-slate-800 bg-slate-950 text-sm text-slate-200 placeholder-slate-600 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10 outline-none transition-all shadow-inner"
                 />
                 <button
                   type="button"
                   onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-slate-400 hover:text-slate-600 transition-colors"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-slate-500 hover:text-slate-300 transition-colors bg-transparent border-none cursor-pointer"
                 >
                   {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
               </div>
             </div>
 
+            {/* Submit Button */}
             <button
               type="submit"
               disabled={loading}
-              className="w-full flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-sm py-2.5 rounded-xl transition-all shadow-md active:scale-[0.98] cursor-pointer mt-4"
+              className="w-full flex items-center justify-center gap-2 bg-emerald-500 hover:bg-emerald-600 disabled:bg-emerald-800/50 text-slate-950 font-bold text-sm py-2.5 rounded-xl transition-all shadow-[0_4px_20px_rgba(16,185,129,0.2)] hover:shadow-[0_4px_25px_rgba(16,185,129,0.3)] active:scale-[0.98] cursor-pointer mt-4 border-none"
             >
               {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <UserPlus className="w-4 h-4" />}
               Sign Up
@@ -190,12 +193,13 @@ export default function Registration({ onNavigate }) {
           </form>
         )}
 
+        {/* Footer Link */}
         {!success && (
-          <div className="mt-6 text-center text-sm text-slate-500">
+          <div className="mt-6 text-center text-sm text-slate-400">
             Already have an account?{' '}
             <button 
               onClick={() => onNavigate('login')} 
-              className="text-emerald-600 font-semibold hover:text-emerald-700 bg-transparent border-none p-0 cursor-pointer outline-none hover:underline"
+              className="text-emerald-400 font-semibold hover:text-emerald-300 bg-transparent border-none p-0 cursor-pointer outline-none hover:underline"
             >
               Sign In
             </button>

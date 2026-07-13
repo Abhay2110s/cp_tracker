@@ -1,1 +1,8 @@
 @import "tailwindcss";
+
+@layer base {
+  body {
+    background-color: #000000; /* Slate 950 (Black/Blue deep) */
+    color: #f1f5f9;           /* Slate 100 (Off-white) */
+  }
+}
