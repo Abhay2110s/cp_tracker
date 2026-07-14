@@ -14,10 +14,7 @@ export default function Navbar({ onNavigate }) {
       
       {/* Action Tray */}
       <div className="flex items-center gap-4">
-        {/* Profile Avatar */}
-        <div className="w-8 h-8 rounded-full bg-emerald-600 flex items-center justify-center text-xs font-bold text-white shadow-[0_0_10px_rgba(16,185,129,0.5)]">
-          A
-        </div>
+
 
         {/* LOG OUT BUTTON - Red Aesthetic */}
         <button 

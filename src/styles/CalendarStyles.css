@@ -1,0 +1,26 @@
+/* Container adjustments */
+.react-calendar {
+  background: transparent !important;
+  border: none !important;
+  color: white !important;
+  width: 100% !important;
+}
+
+/* Base tiles */
+.react-calendar__tile {
+  background: white !important; /* Non-active color */
+  color: #1e293b !important; /* Dark text for readability */
+  border-radius: 8px;
+  margin: 2px;
+}
+
+/* Active tiles */
+.react-calendar__tile.active-day {
+  background: #10b981 !important; /* Green for active */
+  color: white !important;
+}
+
+/* Highlight current day */
+.react-calendar__tile--now {
+  background: #cbd5e1 !important;
+}
