@@ -1,11 +1,14 @@
-import React from 'react';
+import React, { useState } from 'react';
 import Navbar from './Navbar';
 import PlatformLinks from './PlatformLinks';
 import QuestionStats from './QuestionStats';
-import DaysStats from './DaysStats'; // Ensure this is imported
-import CalendarStats from './CalendarStats';
+import DaysStats from './DaysStats';
+import SubmissionHeatmap from './SubmissionHeatmap';
+import AwardsSection from './AwardsSections'; // Ensure this file exists
 
 export default function Dashboard({ onNavigate }) {
+  const [selectedPlatform, setSelectedPlatform] = useState('All');
+
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100">
       <Navbar onNavigate={onNavigate} />
@@ -15,22 +18,24 @@ export default function Dashboard({ onNavigate }) {
         {/* Main Workspace Column */}
         <div className="lg:col-span-3 flex flex-col gap-8">
           
-          {/* Stats Section */}
+          {/* Stats Row */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <QuestionStats />
-            <DaysStats />
+            <QuestionStats filter={selectedPlatform} />
+            <DaysStats filter={selectedPlatform} />
           </div>
-          <div className="lg:col-span-3">
-            <CalendarStats />
-          </div>
+
+          {/* Awards Section */}
+          <AwardsSection filter={selectedPlatform} />
+
+          {/* Submission Heatmap */}
+          <SubmissionHeatmap filter={selectedPlatform} />
           
-          {/* You can add more workspace content here later */}
         </div>
 
         {/* Sidebar Column */}
         <div className="lg:col-span-1">
           <div className="backdrop-blur-md bg-emerald-950/20 border border-emerald-900/50 p-6 rounded-3xl shadow-2xl">
-            <PlatformLinks />
+            <PlatformLinks onSelect={setSelectedPlatform} />
           </div>
         </div>
 
