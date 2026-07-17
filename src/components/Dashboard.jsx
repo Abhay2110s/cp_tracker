@@ -1,44 +1,47 @@
 import React, { useState } from 'react';
 import Navbar from './Navbar';
-import PlatformLinks from './PlatformLinks';
 import QuestionStats from './QuestionStats';
 import DaysStats from './DaysStats';
+import AwardsSection from './AwardsSection';
 import SubmissionHeatmap from './SubmissionHeatmap';
-import AwardsSection from './AwardsSections'; // Ensure this file exists
+import PlatformConnections from './PlatformConnections';
+import { ALL_STATS_DATA } from '../constants';
 
-export default function Dashboard({ onNavigate }) {
+export default function Dashboard() {
   const [selectedPlatform, setSelectedPlatform] = useState('All');
+  const [connections, setConnections] = useState({
+    LeetCode: { verified: false },
+    CodeChef: { verified: false },
+    Codeforces: { verified: false },
+    HackerRank: { verified: false },
+    GFG: { verified: false }
+  });
+
+  const getVerifiedPlatforms = () => 
+    Object.keys(connections).filter(key => connections[key].verified);
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100">
-      <Navbar onNavigate={onNavigate} />
-      
+      <Navbar />
       <main className="max-w-7xl mx-auto p-8 grid grid-cols-1 lg:grid-cols-4 gap-8">
-        
-        {/* Main Workspace Column */}
         <div className="lg:col-span-3 flex flex-col gap-8">
-          
-          {/* Stats Row */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <QuestionStats filter={selectedPlatform} />
-            <DaysStats filter={selectedPlatform} />
+            <QuestionStats 
+              filter={selectedPlatform} 
+              verifiedPlatforms={getVerifiedPlatforms()} 
+              data={ALL_STATS_DATA} 
+            />
+            <DaysStats 
+              filter={selectedPlatform} 
+              verifiedPlatforms={getVerifiedPlatforms()} 
+            />
           </div>
-
-          {/* Awards Section */}
           <AwardsSection filter={selectedPlatform} />
-
-          {/* Submission Heatmap */}
           <SubmissionHeatmap filter={selectedPlatform} />
-          
         </div>
-
-        {/* Sidebar Column */}
         <div className="lg:col-span-1">
-          <div className="backdrop-blur-md bg-emerald-950/20 border border-emerald-900/50 p-6 rounded-3xl shadow-2xl">
-            <PlatformLinks onSelect={setSelectedPlatform} />
-          </div>
+          <PlatformConnections connections={connections} setConnections={setConnections} />
         </div>
-
       </main>
     </div>
   );
