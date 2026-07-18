@@ -2,6 +2,43 @@ import React, { useState } from 'react';
 import { CheckCircle2, Link2, Edit3, Loader2, AlertCircle } from 'lucide-react';
 import { fetchPlatformData } from '../platforms';
 
+// Derive the platform handle from either a raw username or a full profile URL.
+function extractHandle(platform, input) {
+  const raw = (input || '').trim();
+  if (!raw) return '';
+
+  // If it doesn't look like a URL, treat it as the handle directly.
+  if (!/^https?:\/\//i.test(raw)) return raw;
+
+  try {
+    const url = new URL(raw);
+    const path = url.pathname.replace(/^\/+|\/+$/g, '');
+    const segments = path.split('/').filter(Boolean);
+
+    switch (platform) {
+      case 'LeetCode':
+        // https://leetcode.com/u/<handle>/  or  /abhay_2110/
+        return segments[segments.length - 1] || '';
+      case 'Codeforces':
+        // https://codeforces.com/profile/<handle>
+        return segments[segments.length - 1] || '';
+      case 'CodeChef':
+        // https://www.codechef.com/users/<handle>
+        return segments[segments.length - 1] || '';
+      case 'HackerRank':
+        // https://www.hackerrank.com/profile/<handle>
+        return segments[segments.length - 1] || '';
+      case 'GFG':
+        // https://www.geeksforgeeks.org/user/<handle>/
+        return segments[segments.length - 1] || '';
+      default:
+        return segments[segments.length - 1] || raw;
+    }
+  } catch {
+    return raw;
+  }
+}
+
 export default function PlatformConnections({ 
   connections = {}, 
   setConnections, 
@@ -16,17 +53,20 @@ export default function PlatformConnections({
   const [errors, setErrors] = useState({});
 
   const confirmUsername = async (platform) => {
-    const username = tempName.trim();
-    if (!username) return;
+    const handle = extractHandle(platform, tempName);
+    if (!handle) return;
 
     setVerifying(true);
     setError('');
     try {
-      const data = await fetchPlatformData(platform, username);
+      const data = await fetchPlatformData(platform, handle);
       const hasData =
         data && (data.solved > 0 || (data.activity && data.activity.some((a) => a.count > 0)));
       if (!hasData) {
-        const msg = `Could not verify "${username}" on ${platform}. Check the username.`;
+        const msg =
+          data?.source === 'fallback'
+            ? `Could not reach ${platform}. The stats service may be unavailable.`
+            : `Could not verify "${handle}" on ${platform}. Check the profile link.`;
         setError(msg);
         setErrors((prev) => ({ ...prev, [platform]: msg }));
         setVerifying(false);
@@ -39,7 +79,7 @@ export default function PlatformConnections({
       });
       setConnections((prev) => ({
         ...prev,
-        [platform]: { name: username, verified: true },
+        [platform]: { name: handle, verified: true },
       }));
       setActivePlatform(null);
       setTempName('');
@@ -71,20 +111,29 @@ export default function PlatformConnections({
           All
         </button>
 
-        {Object.entries(connections || {}).map(([platform, data]) => (
-          <div key={platform} className="flex items-center justify-between p-3 bg-slate-900/50 rounded-xl border border-emerald-900/30">
-            <span className={`text-sm font-semibold ${data.verified ? 'text-emerald-100' : 'text-slate-600'}`}>
-              {platform}
+        {Object.entries(connections || {}).map(([platform, data]) => {
+          const hasError = Boolean(errors[platform]);
+          return (
+          <div key={platform} className={`flex items-center justify-between p-3 bg-slate-900/50 rounded-xl border ${
+            hasError ? 'border-rose-900/60' : 'border-emerald-900/30'
+          }`}>
+            <span className="flex items-center gap-2 text-sm font-semibold">
+              {hasError && (
+                <span className="w-2 h-2 rounded-full bg-rose-500 shadow-[0_0_8px_#f43f5e]" title={errors[platform]} />
+              )}
+              <span className={data.verified ? 'text-emerald-100' : hasError ? 'text-rose-300' : 'text-slate-600'}>
+                {platform}
+              </span>
             </span>
-            
+
             <div className="flex items-center gap-2">
               {/* Only allow selection if verified */}
               {data.verified && (
-                <button 
+                <button
                   onClick={() => onSelectPlatform(platform)}
                   className={`px-3 py-1 rounded-lg text-[10px] font-bold border transition-all ${
-                    currentFilter === platform 
-                      ? 'bg-emerald-600 border-emerald-500 text-white' 
+                    currentFilter === platform
+                      ? 'bg-emerald-600 border-emerald-500 text-white'
                       : 'border-emerald-900 text-emerald-500 hover:bg-emerald-900/20'
                   }`}
                 >
@@ -92,17 +141,32 @@ export default function PlatformConnections({
                 </button>
               )}
 
-              <button 
-                onClick={() => setActivePlatform(platform)}
+              <button
+                onClick={() => {
+                  setTempName(data.name || '');
+                  setError('');
+                  setActivePlatform(platform);
+                }}
                 className={`flex items-center gap-2 px-3 py-1 rounded-lg text-xs font-bold transition-all ${
-                  data.verified ? 'text-emerald-400' : 'text-slate-500 hover:text-emerald-400'
+                  data.verified
+                    ? 'text-emerald-400'
+                    : hasError
+                      ? 'text-rose-400 hover:text-rose-300'
+                      : 'text-slate-500 hover:text-emerald-400'
                 }`}
               >
-                {data.verified ? <CheckCircle2 size={14} /> : <><Edit3 size={14} /> Connect</>}
+                {data.verified ? (
+                  <CheckCircle2 size={14} />
+                ) : hasError ? (
+                  <><AlertCircle size={14} /> Retry</>
+                ) : (
+                  <><Edit3 size={14} /> Connect</>
+                )}
               </button>
             </div>
           </div>
-        ))}
+          );
+        })}
       </div>
 
       {/* Modal for Username */}
@@ -115,7 +179,7 @@ export default function PlatformConnections({
               value={tempName}
               disabled={verifying}
               className="w-full bg-slate-950 border border-emerald-900 rounded-xl p-3 text-white mb-3 outline-none focus:border-emerald-500 disabled:opacity-60" 
-              placeholder="Enter username" 
+              placeholder="Profile URL or username" 
               onChange={(e) => setTempName(e.target.value)} 
               onKeyDown={(e) => e.key === 'Enter' && confirmUsername(activePlatform)}
             />

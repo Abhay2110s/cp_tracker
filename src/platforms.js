@@ -57,27 +57,40 @@ async function fetchLeetCode(username) {
   const activity = emptyActivity();
   let solved = 0;
   let activeDays = 0;
+  let bestStreak = 0;
 
-  const stats = await proxyFetch(
-    `https://leetcode-stats-api.herokuapp.com/${encodeURIComponent(username)}`
+  // Working community API (the old herokuapp/calendar endpoints are dead).
+  const solvedData = await proxyFetch(
+    `https://alfa-leetcode-api.onrender.com/${encodeURIComponent(username)}/solved`
   );
-  if (stats) {
-    solved = stats.totalSolved || 0;
-    activeDays = stats.totalSessions || 0;
+  if (solvedData) {
+    solved = solvedData.solvedProblem || solvedData.totalSolved || 0;
   }
 
   const cal = await proxyFetch(
-    `https://leetcode.com/api/contest/calendar/${encodeURIComponent(username)}`
+    `https://alfa-leetcode-api.onrender.com/${encodeURIComponent(username)}/calendar`
   );
-  if (cal?.submissionCalendar) {
-    const entries = Object.entries(cal.submissionCalendar).map(([ts, count]) => ({
-      date: new Date(Number(ts) * 1000),
-      count,
-    }));
-    addActivity(activity, entries);
+  if (cal) {
+    bestStreak = cal.streak || 0;
+    activeDays = cal.totalActiveDays || 0;
+    let calendar = cal.submissionCalendar;
+    if (typeof calendar === 'string') {
+      try {
+        calendar = JSON.parse(calendar);
+      } catch {
+        calendar = null;
+      }
+    }
+    if (calendar && typeof calendar === 'object') {
+      const entries = Object.entries(calendar).map(([ts, count]) => ({
+        date: new Date(Number(ts) * 1000),
+        count,
+      }));
+      addActivity(activity, entries);
+    }
   }
 
-  return { username, solved, activeDays, bestStreak: 0, activity };
+  return { username, solved, activeDays, bestStreak, activity };
 }
 
 // ----------------------------- Codeforces -----------------------------
@@ -185,16 +198,17 @@ export async function fetchPlatformData(platform, username) {
     activity: emptyActivity(),
   };
   const fetcher = FETCHERS[platform];
-  if (!fetcher || !username) return fallback;
+  if (!fetcher || !username) return { ...fallback, source: 'fallback' };
   try {
     const result = await fetcher(username);
     return {
       ...fallback,
       ...result,
       activity: Array.isArray(result?.activity) ? result.activity : fallback.activity,
+      source: 'live',
     };
   } catch {
-    return fallback;
+    return { ...fallback, source: 'fallback' };
   }
 }
 

@@ -29,15 +29,24 @@ export default function DaysStats({ filter, verifiedPlatforms = [], platformData
 
   const idleRate = 100 - activeRate;
 
-  // At 0% active, render a single full emerald ring instead of a full dark
-  // (idle) pie, so the donut stays on-brand and clearly "complete".
-  const data =
+  // Follow the QuestionStats pattern: always render a pie. When there is no
+  // activity (or no verified data), show a neutral empty ring instead of a
+  // fully-filled coloured pie.
+  const pieData =
     activeRate === 0
-      ? [{ name: 'Active', value: 1, color: '#10b981' }]
+      ? [{ name: 'Idle', value: 1, color: '#1f3d34' }]
       : [
           { name: 'Active', value: activeRate, color: '#10b981' },
           { name: 'Idle', value: idleRate, color: '#064e3b' },
         ];
+
+  // Swatch colors reflect actual values; neutral when 0 (matches QuestionStats).
+  const NEUTRAL = '#334155';
+  const legend = [
+    { label: 'Active Days', value: activeDays, color: activeDays > 0 ? '#10b981' : NEUTRAL },
+    { label: 'Best Streak', value: bestStreak, color: bestStreak > 0 ? '#059669' : NEUTRAL },
+    { label: 'Solved', value: solved, color: solved > 0 ? '#34d399' : NEUTRAL },
+  ];
 
   return (
     <div className="backdrop-blur-md bg-emerald-950/20 border border-emerald-900/50 p-6 rounded-3xl shadow-2xl">
@@ -51,39 +60,44 @@ export default function DaysStats({ filter, verifiedPlatforms = [], platformData
           <ResponsiveContainer>
             <PieChart>
               <Pie
-                data={data}
+                data={pieData}
                 innerRadius={45}
                 outerRadius={60}
-                paddingAngle={5}
+                paddingAngle={activeRate === 0 ? 0 : 5}
                 dataKey="value"
                 cx="50%"
                 cy="50%"
               >
-                {data.map((entry, index) => (
+                {pieData.map((entry, index) => (
                   <Cell key={`cell-${index}`} fill={entry.color} />
                 ))}
               </Pie>
             </PieChart>
           </ResponsiveContainer>
           <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-            <span className="text-xl font-black text-white">{activeRate}%</span>
+            <span className="text-xl font-black text-white">{activeRate}</span>
           </div>
         </div>
 
         {/* Legend/Stats */}
         <div className="flex flex-col gap-2">
-          <div className="flex items-center gap-2">
-            <div className="w-3 h-3 rounded-full bg-emerald-500"></div>
-            <span className="text-emerald-100 text-[11px]">Active Days: {activeDays}</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="w-3 h-3 rounded-full bg-emerald-900"></div>
-            <span className="text-emerald-100 text-[11px]">Best Streak: {bestStreak}</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="w-3 h-3 rounded-full bg-emerald-400"></div>
-            <span className="text-emerald-100 text-[11px]">Solved: {solved}</span>
-          </div>
+          {sources.length > 0 ? (
+            legend.map((item) => (
+              <div key={item.label} className="flex items-center gap-2">
+                <div
+                  className="w-3 h-3 rounded-full"
+                  style={{ backgroundColor: item.color }}
+                ></div>
+                <span className="text-emerald-100 text-[11px]">
+                  {item.label}: {item.value}
+                </span>
+              </div>
+            ))
+          ) : (
+            <p className="text-emerald-400/50 text-[11px] italic">
+              No data available for {filter}
+            </p>
+          )}
         </div>
       </div>
     </div>
