@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
-import Dashboard from './components/Dashboard';
-import welcome from './components/WelcomePage'
+import Dashboard from './Dashboard';
 export default function App() {
   const [currentView, setCurrentView] = useState('dashboard');
 

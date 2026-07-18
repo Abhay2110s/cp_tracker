@@ -1,7 +1,7 @@
 import React from 'react';
 import { ArrowRight, Sparkles, LogIn, UserPlus } from 'lucide-react';
 
-export default function WelcomePage({ isDarkMode, onNavigate }) {
+export default function WelcomePage({ onNavigate }) {
   // Enforcing the deep black & neon green theme natively
   return (
     <div className="min-h-screen flex flex-col items-center justify-center p-4 relative overflow-hidden bg-[#05070c] text-white selection:bg-emerald-500 selection:text-black">
